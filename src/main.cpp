@@ -17,15 +17,29 @@
 //cURL library
 #include <curl/curl.h>
 //spdlog library
+#include <boost/algorithm/string/erase.hpp>
+#include <boost/type_index.hpp>
 #include <spdlog/spdlog.h>
+#include <spdlog/sinks/file_sinks.h>
+#include <spdlog/sinks/stdout_sinks.h>
+#include <spdlog/sinks/syslog_sink.h>
 
 #define SERVER_PATH     "/tmp/server.dat"
 #define BUFFER_LENGTH    250
 #define FALSE              0
-#define MAX_PARALLEL 10  
+#define MAX_PARALLEL 3  
 #define NUM_URLS sizeof(urls)/sizeof(char *)
  
 using namespace std;
+
+static const char *urls[] = {
+  "http://roadtocodingexpert.com",
+  "https://www.microsoft.com",
+  "https://opensource.org",
+  "https://www.google.com",
+  "https://www.mozilla.org",
+};
+
 
 void test(string context){
 
@@ -59,12 +73,21 @@ class threadObj{
 };
 int main(int argc, char **argv)
 {
+  // spdlog::info("Welcome to spdlog!");
+  // spdlog::error("Some error message with arg: {}", 1);
+
   cout<<"---Start" <<"\n";
   int    sd=-1, sd2=-1;
   int    rc, length;
   char   buffer[BUFFER_LENGTH];
   struct sockaddr_un serveraddr;
-  
+
+  auto logDownloader = spdlog::stdout_color_mt("downloader");
+  auto err_logger = spdlog::stderr_color_mt("stderr");    
+  spdlog::get("downloader")->info(
+    "Start register logger for downloader {} ", 2311);
+  spdlog::get("downloader") ->info("Author: truongdeptrai");
+
 
   CURLM *cm;
   CURLMsg *msg;
@@ -89,13 +112,13 @@ int main(int argc, char **argv)
         char *url;
         CURL *e = msg->easy_handle;
         curl_easy_getinfo(msg->easy_handle, CURLINFO_PRIVATE, &url);
-        fprintf(stderr, "R: %d - %s <%s>\n",
-                msg->data.result, curl_easy_strerror(msg->data.result), url);
+        spdlog::get("downloader") ->info(" ~~R: {}  - {} < {} > ",
+                     msg->data.result, curl_easy_strerror(msg->data.result), url);
         curl_multi_remove_handle(cm, e);
         curl_easy_cleanup(e);
       }
       else {
-        fprintf(stderr, "E: CURLMsg (%d)\n", msg->msg);
+        spdlog::get("downloader") ->info(" ~~E: CURLMsg {}   ",msg->msg);
       }
       if(transfers < NUM_URLS)
         add_transfer(cm, transfers++);
@@ -108,12 +131,7 @@ int main(int argc, char **argv)
   curl_multi_cleanup(cm);
   curl_global_cleanup();
   
-  do{
 
-  }while(FALSE);
-  if (sd != -1) close(sd);
-  if (sd2 != -1) close(sd2);
-  unlink(SERVER_PATH);
-  cout<<"truongdeptrai" <<"\n";
+  spdlog::get("downloader") ->info(" End");
   return 0;
 }
