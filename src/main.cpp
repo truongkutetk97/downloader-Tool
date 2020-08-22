@@ -20,7 +20,7 @@
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/type_index.hpp>
 #include <spdlog/spdlog.h>
-#include <spdlog/sinks/file_sinks.h>
+#include <spdlog/sinks/basic_file_sinks.h>
 #include <spdlog/sinks/stdout_sinks.h>
 #include <spdlog/sinks/syslog_sink.h>
 
@@ -73,20 +73,18 @@ class threadObj{
 };
 int main(int argc, char **argv)
 {
-  // spdlog::info("Welcome to spdlog!");
-  // spdlog::error("Some error message with arg: {}", 1);
-
-  cout<<"---Start" <<"\n";
-  int    sd=-1, sd2=-1;
-  int    rc, length;
-  char   buffer[BUFFER_LENGTH];
-  struct sockaddr_un serveraddr;
+  spdlog::info("Welcome to spdlog!");
+  spdlog::error("Some error message with arg: {}", 1);
 
   auto logDownloader = spdlog::stdout_color_mt("downloader");
   auto err_logger = spdlog::stderr_color_mt("stderr");    
+  auto file_logger = spdlog::basic_logger_mt("downloader", "logs.txt");
+  spdlog::enable_backtrace(32);
+
   spdlog::get("downloader")->info(
     "Start register logger for downloader {} ", 2311);
   spdlog::get("downloader") ->info("Author: truongdeptrai");
+
 
 
   CURLM *cm;
